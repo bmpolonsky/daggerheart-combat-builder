@@ -1,20 +1,23 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Daggerheart Combat Builder
 
-# Run and deploy your AI Studio app
+Локальный конструктор столкновений для Daggerheart с:
 
-This contains everything you need to run your app locally.
+- поиском и фильтрацией противников;
+- подсчётом бюджета боя;
+- сохранением текущей встречи в `localStorage`;
+- предзагрузкой JSON и изображений на этапе `predev`/`prebuild`;
+- статической сборкой для GitHub Pages.
 
-View your app in AI Studio: https://ai.studio/apps/75769ccf-3852-45ff-b52f-b33605172900
+## Команды
 
-## Run Locally
+```bash
+npm install
+npm run dev
+npm run build
+```
 
-**Prerequisites:**  Node.js
+## Источник данных
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Во время `predev` и `prebuild` скрипт [`scripts/cache-assets.mjs`](./scripts/cache-assets.mjs)
+скачивает противников из `https://daggerheart.su/api/adversary?lang=ru` и сохраняет их в `public/data`,
+а также подтягивает изображения противников в `public/image`.

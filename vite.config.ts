@@ -1,23 +1,34 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import preact from "@preact/preset-vite";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+const workspaceRoot = fileURLToPath(new URL(".", import.meta.url));
+const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const inferredBase =
+  repoName && repoName.endsWith(".github.io") ? "/" : repoName ? `/${repoName}/` : "/";
+const base = process.env.VITE_BASE_PATH ?? inferredBase;
+
+export default defineConfig({
+  base,
+  plugins: [preact()],
+  resolve: {
+    alias: {
+      "@": resolve(workspaceRoot, "src"),
+    },
+  },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
       },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      "/image": {
+        target: "https://daggerheart.su",
+        changeOrigin: true,
+        secure: true,
       },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
+    },
+  },
 });
