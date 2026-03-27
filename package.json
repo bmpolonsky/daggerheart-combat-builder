@@ -1,22 +1,22 @@
 {
-  "name": "конструктор-боёв-daggerheart",
+  "name": "daggerheart-combat-builder",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/cache-assets.mjs",
     "dev": "vite",
-    "build": "vite build",
+    "prebuild": "node scripts/cache-assets.mjs",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^19.2.1",
-    "react": "^19.2.1",
-    "lucide-react": "^0.556.0"
+    "preact": "10.27.2"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@preact/preset-vite": "2.10.2",
+    "@types/node": "22.18.13",
+    "typescript": "5.9.3",
+    "vite": "7.1.12"
   }
 }
