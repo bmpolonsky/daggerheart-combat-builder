@@ -8,7 +8,7 @@ import { adversariesStore } from "@/stores/adversaries";
 import { encounterStore } from "@/stores/encounter";
 
 export function SidebarContainer() {
-  const { searchTerm, tierFilter, roleFilter, items } = useStore(adversariesStore);
+  const { searchTerm, tierFilter, roleFilter, items, isLoading, error } = useStore(adversariesStore);
   const { isSidebarOpen } = useStore(encounterStore);
   const { filteredItems, roleOptions } = adversariesService.buildBrowserView();
 
@@ -87,7 +87,18 @@ export function SidebarContainer() {
 
       <div className="flex-1 overflow-y-auto bg-slate-900/50 p-4 md:p-6">
         <div className="grid grid-cols-1 gap-4 pb-20 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {filteredItems.map((adversary) => (
+          {isLoading && items.length === 0 && (
+            <div className="col-span-full py-20 text-center">
+              <p className="text-lg text-slate-500">Загружаем противников...</p>
+            </div>
+          )}
+          {error && !isLoading && (
+            <div className="col-span-full py-20 text-center">
+              <p className="text-lg text-red-400">Не удалось загрузить список: {error}</p>
+            </div>
+          )}
+          {!error &&
+            filteredItems.map((adversary) => (
             <AdversaryCard
               key={adversary.id}
               adversary={adversary}
@@ -95,7 +106,7 @@ export function SidebarContainer() {
               onViewDetails={() => adversariesService.openDetails(adversary.id)}
             />
           ))}
-          {filteredItems.length === 0 && (
+          {!isLoading && !error && filteredItems.length === 0 && (
             <div className="col-span-full py-20 text-center">
               <p className="text-lg text-slate-500">
                 Противники, соответствующие критериям, не найдены.
