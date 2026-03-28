@@ -1,6 +1,10 @@
 import type { Adversary, EncounterEntry } from "@/lib/api";
 import { clamp } from "@/lib/utils";
-import { encounterStore } from "@/stores/encounter";
+import {
+  encounterStore,
+  type EncounterBattleEntry,
+  type EncounterUnitState,
+} from "@/stores/encounter";
 
 type PersistedEncounterState = Pick<
   ReturnType<typeof encounterStore.getState>,
@@ -11,8 +15,69 @@ const STORAGE_KEY = "daggerheart-combat-builder:encounter";
 
 const isBrowser = () => typeof window !== "undefined";
 
-function normalizeEntries(entries: EncounterEntry[]) {
+function createInstanceId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `unit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createUnitState(hp = 0, stress = 0): EncounterUnitState {
+  return {
+    id: createInstanceId(),
+    currentHp: hp,
+    currentStress: stress,
+  };
+}
+
+function hydrateEntry(entry: EncounterEntry | EncounterBattleEntry): EncounterBattleEntry {
+  const legacyHp =
+    typeof (entry as EncounterBattleEntry & { currentHp?: number }).currentHp === "number"
+      ? clamp(
+          (entry as EncounterBattleEntry & { currentHp?: number }).currentHp ?? 0,
+          0,
+          Math.max(0, entry.adversary.hp)
+        )
+      : 0;
+  const legacyStress =
+    typeof (entry as EncounterBattleEntry & { currentStress?: number }).currentStress === "number"
+      ? clamp(
+          (entry as EncounterBattleEntry & { currentStress?: number }).currentStress ?? 0,
+          0,
+          Math.max(0, entry.adversary.stress)
+        )
+      : 0;
+  const rawInstances = Array.isArray((entry as EncounterBattleEntry).instances)
+    ? (entry as EncounterBattleEntry).instances
+    : [];
+  const targetCount = Math.max(0, entry.count);
+  const baseInstances =
+    rawInstances.length > 0
+      ? rawInstances.map((instance) => ({
+          id: instance.id || createInstanceId(),
+          currentHp: clamp(instance.currentHp, 0, Math.max(0, entry.adversary.hp)),
+          currentStress: clamp(instance.currentStress, 0, Math.max(0, entry.adversary.stress)),
+        }))
+      : Array.from({ length: targetCount }, () => createUnitState(legacyHp, legacyStress));
+  const instances =
+    baseInstances.length >= targetCount
+      ? baseInstances.slice(0, targetCount)
+      : [
+          ...baseInstances,
+          ...Array.from({ length: targetCount - baseInstances.length }, () => createUnitState()),
+        ];
+
+  return {
+    ...entry,
+    count: instances.length,
+    instances,
+  };
+}
+
+function normalizeEntries(entries: Array<EncounterEntry | EncounterBattleEntry>) {
   return entries
+    .map(hydrateEntry)
     .filter((entry) => entry.count > 0)
     .sort((left, right) => {
       if (left.adversary.tier !== right.adversary.tier) {
@@ -95,10 +160,21 @@ export class EncounterService {
       const entries = existing
         ? state.entries.map((entry) =>
             entry.adversary.id === adversary.id
-              ? { ...entry, count: entry.count + 1 }
+              ? {
+                  ...entry,
+                  instances: [...entry.instances, createUnitState()],
+                  count: entry.instances.length + 1,
+                }
               : entry
           )
-        : [...state.entries, { adversary, count: 1 }];
+        : [
+            ...state.entries,
+            {
+              adversary,
+              count: 1,
+              instances: [createUnitState()],
+            },
+          ];
 
       return {
         ...state,
@@ -118,10 +194,104 @@ export class EncounterService {
         state.entries
           .map((entry) =>
             entry.adversary.id === id
-              ? { ...entry, count: Math.max(0, entry.count + delta) }
+              ? (() => {
+                  const nextCount = Math.max(0, entry.count + delta);
+                  const instances =
+                    nextCount <= entry.instances.length
+                      ? entry.instances.slice(0, nextCount)
+                      : [
+                          ...entry.instances,
+                          ...Array.from(
+                            { length: nextCount - entry.instances.length },
+                            () => createUnitState()
+                          ),
+                        ];
+
+                  return {
+                    ...entry,
+                    count: instances.length,
+                    instances,
+                  };
+                })()
               : entry
           )
           .filter((entry) => entry.count > 0)
+      ),
+    }));
+
+    this.persist();
+  }
+
+  adjustHp(id: number, unitId: string, delta: number) {
+    encounterStore.update((state) => ({
+      ...state,
+      entries: normalizeEntries(
+        state.entries.map((entry) =>
+          entry.adversary.id === id
+            ? {
+                ...entry,
+                instances: entry.instances.map((instance) =>
+                  instance.id === unitId
+                    ? {
+                        ...instance,
+                        currentHp: clamp(instance.currentHp + delta, 0, entry.adversary.hp),
+                      }
+                    : instance
+                ),
+              }
+            : entry
+        )
+      ),
+    }));
+
+    this.persist();
+  }
+
+  adjustStress(id: number, unitId: string, delta: number) {
+    encounterStore.update((state) => ({
+      ...state,
+      entries: normalizeEntries(
+        state.entries.map((entry) =>
+          entry.adversary.id === id
+            ? {
+                ...entry,
+                instances: entry.instances.map((instance) =>
+                  instance.id === unitId
+                    ? {
+                        ...instance,
+                        currentStress: clamp(
+                          instance.currentStress + delta,
+                          0,
+                          entry.adversary.stress
+                        ),
+                      }
+                    : instance
+                ),
+              }
+            : entry
+        )
+      ),
+    }));
+
+    this.persist();
+  }
+
+  resetEntryState(id: number) {
+    encounterStore.update((state) => ({
+      ...state,
+      entries: normalizeEntries(
+        state.entries.map((entry) =>
+          entry.adversary.id === id
+            ? {
+                ...entry,
+                instances: entry.instances.map((instance) => ({
+                  ...instance,
+                  currentHp: 0,
+                  currentStress: 0,
+                })),
+              }
+            : entry
+        )
       ),
     }));
 

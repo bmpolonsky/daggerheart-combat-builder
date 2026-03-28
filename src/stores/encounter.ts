@@ -2,8 +2,18 @@ import type { EncounterEntry } from "@/lib/api";
 import type { DifficultyMode } from "@/lib/mechanics";
 import { Store } from "@/lib/store";
 
+export interface EncounterUnitState {
+  id: string;
+  currentHp: number;
+  currentStress: number;
+}
+
+export type EncounterBattleEntry = EncounterEntry & {
+  instances: EncounterUnitState[];
+};
+
 export interface EncounterState {
-  entries: EncounterEntry[];
+  entries: EncounterBattleEntry[];
   playerCount: number;
   difficultyMode: DifficultyMode;
   isDamageBoosted: boolean;

@@ -31,48 +31,48 @@ export function SidebarContainer() {
 
         <div className="flex w-full flex-wrap items-center justify-end gap-3 md:w-auto md:flex-nowrap">
           <div className="relative w-full flex-grow md:w-64 md:flex-grow-0">
-            <IconSearch
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-              size={16}
-            />
-            <input
-              type="text"
-              placeholder="Поиск..."
-              className="w-full rounded-md border border-slate-700 bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-600 focus:border-dagger-gold focus:ring-1 focus:ring-dagger-gold"
-              value={searchTerm}
-              onInput={(event) => adversariesService.setSearchTerm(event.currentTarget.value)}
-            />
+              <IconSearch
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                size={16}
+              />
+              <input
+                type="text"
+                placeholder="Поиск..."
+                className="w-full rounded-md border border-slate-700 bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-600 focus:border-dagger-gold focus:ring-1 focus:ring-dagger-gold"
+                value={searchTerm}
+                onInput={(event) => adversariesService.setSearchTerm(event.currentTarget.value)}
+              />
           </div>
 
           <div className="flex w-full items-center gap-2 md:w-auto">
-            <select
-              className="flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
-              value={String(tierFilter)}
-              onChange={(event) => {
-                const value = event.currentTarget.value;
-                adversariesService.setTierFilter(value === "all" ? "all" : Number(value));
-              }}
-            >
-              <option value="all">Любой ранг</option>
-              {uniqueTiers.map((tier) => (
-                <option key={tier} value={tier}>
-                  Ранг {tier}
-                </option>
-              ))}
-            </select>
+              <select
+                className="flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
+                value={String(tierFilter)}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  adversariesService.setTierFilter(value === "all" ? "all" : Number(value));
+                }}
+              >
+                <option value="all">Любой ранг</option>
+                {uniqueTiers.map((tier) => (
+                  <option key={tier} value={tier}>
+                    Ранг {tier}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              className="max-w-[140px] flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
-              value={roleFilter}
-              onChange={(event) => adversariesService.setRoleFilter(event.currentTarget.value)}
-            >
-              <option value="all">Любая роль</option>
-              {roleOptions.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
-                </option>
+              <select
+                className="max-w-[140px] flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
+                value={roleFilter}
+                onChange={(event) => adversariesService.setRoleFilter(event.currentTarget.value)}
+              >
+                <option value="all">Любая роль</option>
+                {roleOptions.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
+                  </option>
               ))}
-            </select>
+              </select>
           </div>
 
           <button

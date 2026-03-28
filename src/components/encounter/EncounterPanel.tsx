@@ -1,7 +1,7 @@
 import { useMemo, useState } from "preact/hooks";
-import type { EncounterEntry } from "@/lib/api";
 import type { DifficultyMode, EncounterSummary } from "@/lib/mechanics";
 import { calculateAdversaryCost } from "@/lib/mechanics";
+import type { EncounterBattleEntry } from "@/stores/encounter";
 import {
   IconInfo,
   IconMinus,
@@ -12,7 +12,7 @@ import {
 } from "@/components/icons";
 
 interface EncounterPanelProps {
-  entries: EncounterEntry[];
+  entries: EncounterBattleEntry[];
   summary: EncounterSummary;
   playerCount: number;
   difficultyMode: DifficultyMode;
@@ -20,6 +20,9 @@ interface EncounterPanelProps {
   isLowerTierUsed: boolean;
   onOpenDetails: (id: number) => void;
   onUpdateCount: (id: number, delta: number) => void;
+  onAdjustHp: (id: number, unitId: string, delta: number) => void;
+  onAdjustStress: (id: number, unitId: string, delta: number) => void;
+  onResetEntryState: (id: number) => void;
   onClear: () => void;
   onSetPlayerCount: (count: number) => void;
   onSetDifficultyMode: (mode: DifficultyMode) => void;
@@ -40,6 +43,51 @@ function progressWidth(finalBudget: number, totalCost: number) {
   return `${Math.min(100, (totalCost / (Math.max(1, finalBudget) * 1.5)) * 100)}%`;
 }
 
+interface TrackProps {
+  label: string;
+  labelClassName?: string;
+  value: number;
+  max: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+}
+
+function Track({
+  label,
+  labelClassName,
+  value,
+  max,
+  onDecrease,
+  onIncrease,
+}: TrackProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`text-[10px] uppercase tracking-wider ${labelClassName ?? "text-slate-400"}`}>
+        {label}
+      </span>
+      <div className="ml-auto flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onDecrease}
+          className="flex h-5 w-5 items-center justify-center rounded border border-slate-700/80 bg-slate-900/80 text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          <IconMinus size={10} />
+        </button>
+        <span className="w-10 text-center font-mono text-xs text-white">
+          {value}/{max}
+        </span>
+        <button
+          type="button"
+          onClick={onIncrease}
+          className="flex h-5 w-5 items-center justify-center rounded border border-slate-700/80 bg-slate-900/80 text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          <IconPlus size={10} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function EncounterPanel({
   entries,
   summary,
@@ -49,6 +97,9 @@ export function EncounterPanel({
   isLowerTierUsed,
   onOpenDetails,
   onUpdateCount,
+  onAdjustHp,
+  onAdjustStress,
+  onResetEntryState,
   onClear,
   onSetPlayerCount,
   onSetDifficultyMode,
@@ -229,48 +280,87 @@ export function EncounterPanel({
             return (
               <div
                 key={entry.adversary.id}
-                className="group flex items-center gap-3 rounded border border-slate-700 bg-slate-800 p-3 shadow-sm animate-in slide-in-from-right-4 duration-300"
+                className="rounded border border-slate-700 bg-slate-800 p-3 shadow-sm"
               >
-                <button
-                  type="button"
-                  onClick={() => onOpenDetails(entry.adversary.id)}
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-dagger-gold/30 bg-dagger-dark text-sm font-bold text-dagger-gold shadow-inner transition-colors hover:bg-slate-700"
-                  title="Посмотреть свойства"
-                >
-                  {cost}
-                </button>
+                <div className="flex items-start gap-3">
+                  <button
+                    type="button"
+                    onClick={() => onOpenDetails(entry.adversary.id)}
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-dagger-gold/30 bg-dagger-dark text-sm font-bold text-dagger-gold shadow-inner transition-colors hover:bg-slate-700"
+                    title="Посмотреть свойства"
+                  >
+                    {cost}
+                  </button>
 
-                <div
-                  className="min-w-0 flex-grow cursor-pointer transition-colors hover:text-dagger-gold"
-                  onClick={() => onOpenDetails(entry.adversary.id)}
-                >
-                  <div className="truncate pr-1 text-sm font-medium text-slate-200">
-                    {entry.adversary.name}
+                  <div className="min-w-0 flex-grow">
+                    <div
+                      className="truncate pr-1 text-sm font-medium text-slate-200 transition-colors hover:text-dagger-gold"
+                      onClick={() => onOpenDetails(entry.adversary.id)}
+                    >
+                      {entry.adversary.name}
+                    </div>
+                    <div className="truncate text-xs capitalize text-slate-500">
+                      {entry.adversary.roleName}
+                      {entry.count > 1 ? ` • x${entry.count}` : ""}
+                    </div>
                   </div>
-                  <div className="truncate text-xs capitalize text-slate-500">
-                    {entry.adversary.roleName}
+
+                  <div className="flex shrink-0 items-center gap-1 rounded border border-slate-700 bg-slate-900 px-1 py-1">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateCount(entry.adversary.id, -1)}
+                      className="p-1 text-slate-400 transition-colors hover:text-red-400"
+                      title="Уменьшить / Удалить"
+                    >
+                      <IconMinus size={14} />
+                    </button>
+                    <span className="w-5 select-none text-center text-sm font-mono text-white">
+                      {entry.count}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateCount(entry.adversary.id, 1)}
+                      className="p-1 text-slate-400 transition-colors hover:text-green-400"
+                      title="Увеличить"
+                    >
+                      <IconPlus size={14} />
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1 rounded border border-slate-700 bg-slate-900 px-1 py-1">
+                <div className="mt-2 space-y-1.5">
+                  {entry.instances.map((instance) => (
+                    <div key={instance.id} className="grid gap-2 sm:grid-cols-2">
+                        <Track
+                          label="Раны"
+                          labelClassName="text-red-300"
+                          value={instance.currentHp}
+                          max={entry.adversary.hp}
+                          onDecrease={() => onAdjustHp(entry.adversary.id, instance.id, -1)}
+                          onIncrease={() => onAdjustHp(entry.adversary.id, instance.id, 1)}
+                        />
+                        <Track
+                          label="Стресс"
+                          labelClassName="text-yellow-300"
+                          value={instance.currentStress}
+                          max={entry.adversary.stress}
+                          onDecrease={() =>
+                            onAdjustStress(entry.adversary.id, instance.id, -1)
+                          }
+                          onIncrease={() => onAdjustStress(entry.adversary.id, instance.id, 1)}
+                        />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                  <span className="font-mono">ОБ {cost}</span>
                   <button
                     type="button"
-                    onClick={() => onUpdateCount(entry.adversary.id, -1)}
-                    className="p-1 text-slate-400 transition-colors hover:text-red-400"
-                    title="Уменьшить / Удалить"
+                    onClick={() => onResetEntryState(entry.adversary.id)}
+                    className="rounded px-2 py-1 transition-colors hover:bg-slate-700 hover:text-white"
                   >
-                    <IconMinus size={14} />
-                  </button>
-                  <span className="w-5 select-none text-center text-sm font-mono text-white">
-                    {entry.count}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateCount(entry.adversary.id, 1)}
-                    className="p-1 text-slate-400 transition-colors hover:text-green-400"
-                    title="Увеличить"
-                  >
-                    <IconPlus size={14} />
+                    Сбросить
                   </button>
                 </div>
               </div>
@@ -353,7 +443,7 @@ export function EncounterPanel({
               <span>Бюджет: {summary.finalBudget}</span>
             </div>
             <span
-              className={`rounded border border-current px-2 py-0.5 text-[10px] text-sm font-bold uppercase tracking-wider ${getDifficultyColor(
+              className={`rounded border border-current px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getDifficultyColor(
                 summary.difficulty.tone
               )}`}
             >
