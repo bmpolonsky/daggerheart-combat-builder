@@ -7,6 +7,7 @@ import {
   IconMinus,
   IconPlus,
   IconRefresh,
+  IconSettings,
   IconUsers,
 } from "@/components/icons";
 
@@ -84,9 +85,9 @@ export function EncounterPanel({
                 ? "bg-slate-800 text-dagger-gold"
                 : "text-slate-400 hover:bg-slate-800 hover:text-white"
             }`}
-            title="Модификаторы боя"
+            title="Настройки боя"
           >
-            <IconInfo size={18} />
+            <IconSettings size={18} />
           </button>
           {entries.length > 0 && (
             <button

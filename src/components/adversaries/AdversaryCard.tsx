@@ -2,7 +2,7 @@ import { useState } from "preact/hooks";
 import type { JSX } from "preact";
 import type { Adversary } from "@/lib/api";
 import { calculateAdversaryCost } from "@/lib/mechanics";
-import { IconHeart, IconInfo, IconPlus, IconShield, IconSword, IconZap } from "@/components/icons";
+import { IconHeart, IconPlus, IconShield, IconSword, IconZap } from "@/components/icons";
 import { formatDamageRoll } from "@/lib/utils";
 
 interface AdversaryCardProps {
@@ -92,7 +92,7 @@ export function AdversaryCard({
             </p>
           </div>
 
-          <div className="mt-auto grid grid-cols-4 gap-1.5">
+          <div className="mt-auto grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.45fr)] gap-1.5">
             <div
               className="flex flex-col items-center rounded border border-slate-700/50 bg-slate-800/80 p-1"
               title="Сложность"
@@ -118,11 +118,11 @@ export function AdversaryCard({
             </div>
 
             <div
-              className="col-span-1 flex flex-col items-center rounded border border-slate-700/50 bg-slate-800/80 p-1"
+              className="flex min-w-0 flex-col items-center rounded border border-slate-700/50 bg-slate-800/80 p-1"
               title="Урон"
             >
               <IconSword size={12} className="mb-0.5 text-orange-400" />
-              <span className="w-full truncate text-center text-[10px] font-bold leading-none text-white">
+              <span className="w-full whitespace-nowrap text-center font-mono text-[9px] font-bold leading-none tracking-tight text-white">
                 {formatDamageRoll(adversary, { flatSuffix: " ур." })}
               </span>
             </div>

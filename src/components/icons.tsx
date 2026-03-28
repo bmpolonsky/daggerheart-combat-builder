@@ -10,9 +10,9 @@ function IconBase({ size = 18, children, ...props }: IconProps & { children: JSX
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       width={size}
       height={size}
       aria-hidden="true"
@@ -96,12 +96,8 @@ export function IconZap(props: IconProps) {
 export function IconSword(props: IconProps) {
   return (
     <IconBase {...props}>
-      <path d="M14.75 3.75 20.25 9.25" />
-      <path d="m13.5 5 4.5 4.5" />
-      <path d="M11.5 7 5 13.5" />
-      <path d="m4 14.5 5.5 5.5" />
-      <path d="m7.25 18.25-3.5 1 1-3.5" />
-      <path d="m8.5 10 5.5 5.5" />
+      <path d="M20 4v5l-9 7l-4 4l-3 -3l4 -4l7 -9h5" />
+      <path d="M6.5 11.5l6 6" />
     </IconBase>
   );
 }
@@ -125,12 +121,21 @@ export function IconRefresh(props: IconProps) {
   );
 }
 
+export function IconSettings(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" />
+      <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+    </IconBase>
+  );
+}
+
 export function IconInfo(props: IconProps) {
   return (
     <IconBase {...props}>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 10v6" />
-      <path d="M12 7h.01" />
+      <circle cx="12" cy="7" r="1" fill="currentColor" stroke="none" />
     </IconBase>
   );
 }
