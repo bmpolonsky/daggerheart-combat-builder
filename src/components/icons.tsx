@@ -96,10 +96,12 @@ export function IconZap(props: IconProps) {
 export function IconSword(props: IconProps) {
   return (
     <IconBase {...props}>
-      <path d="m14.5 5.5 4 4" />
-      <path d="M12 8 4 16l4 4 8-8" />
-      <path d="m15 3 6 6" />
-      <path d="m2 22 6-6" />
+      <path d="M14.75 3.75 20.25 9.25" />
+      <path d="m13.5 5 4.5 4.5" />
+      <path d="M11.5 7 5 13.5" />
+      <path d="m4 14.5 5.5 5.5" />
+      <path d="m7.25 18.25-3.5 1 1-3.5" />
+      <path d="m8.5 10 5.5 5.5" />
     </IconBase>
   );
 }

@@ -23,12 +23,14 @@ export function formatDamageRoll(params: {
   damageDieCount: number;
   damageDieSize: number;
   damageBonus: number;
+}, options?: {
+  flatSuffix?: string;
 }) {
   const { damageDieCount, damageDieSize, damageBonus } = params;
   const hasDice = damageDieCount > 0 && damageDieSize > 0;
 
   if (!hasDice) {
-    return `${damageBonus}`;
+    return `${damageBonus}${options?.flatSuffix ?? ""}`;
   }
 
   const bonus =

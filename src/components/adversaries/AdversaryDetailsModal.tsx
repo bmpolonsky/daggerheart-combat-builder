@@ -151,7 +151,7 @@ export function AdversaryDetailsModal({
               </div>
               <div className="mt-auto pt-1 text-center">
                 <div className="font-mono text-xl font-bold leading-none tracking-tight text-white">
-                  {formatDamageRoll(adversary)}
+                  {formatDamageRoll(adversary, { flatSuffix: " урона" })}
                 </div>
                 <div className="mt-1 truncate text-[10px] font-bold uppercase text-slate-500">
                   {damageTypeLabel(adversary.damageType)}

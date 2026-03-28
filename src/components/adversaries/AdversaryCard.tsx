@@ -123,7 +123,7 @@ export function AdversaryCard({
             >
               <IconSword size={12} className="mb-0.5 text-orange-400" />
               <span className="w-full truncate text-center text-[10px] font-bold leading-none text-white">
-                {formatDamageRoll(adversary)}
+                {formatDamageRoll(adversary, { flatSuffix: " ур." })}
               </span>
             </div>
           </div>
