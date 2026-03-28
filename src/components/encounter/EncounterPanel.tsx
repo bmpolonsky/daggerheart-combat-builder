@@ -22,7 +22,6 @@ interface EncounterPanelProps {
   onUpdateCount: (id: number, delta: number) => void;
   onAdjustHp: (id: number, unitId: string, delta: number) => void;
   onAdjustStress: (id: number, unitId: string, delta: number) => void;
-  onResetEntryState: (id: number) => void;
   onClear: () => void;
   onSetPlayerCount: (count: number) => void;
   onSetDifficultyMode: (mode: DifficultyMode) => void;
@@ -99,7 +98,6 @@ export function EncounterPanel({
   onUpdateCount,
   onAdjustHp,
   onAdjustStress,
-  onResetEntryState,
   onClear,
   onSetPlayerCount,
   onSetDifficultyMode,
@@ -123,10 +121,7 @@ export function EncounterPanel({
   return (
     <div className="flex h-full w-full flex-col bg-dagger-panel">
       <div className="flex shrink-0 items-center justify-between border-b border-slate-700 bg-slate-900 p-4 shadow-sm">
-        <div>
-          <h2 className="font-display text-xl font-bold text-dagger-gold">Колода боя</h2>
-          <div className="text-xs text-slate-400">Соберите свою битву.</div>
-        </div>
+        <div />
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -353,16 +348,6 @@ export function EncounterPanel({
                   ))}
                 </div>
 
-                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-mono">ОБ {cost}</span>
-                  <button
-                    type="button"
-                    onClick={() => onResetEntryState(entry.adversary.id)}
-                    className="rounded px-2 py-1 transition-colors hover:bg-slate-700 hover:text-white"
-                  >
-                    Сбросить
-                  </button>
-                </div>
               </div>
             );
           })

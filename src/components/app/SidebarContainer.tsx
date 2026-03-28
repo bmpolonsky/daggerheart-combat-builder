@@ -22,11 +22,8 @@ export function SidebarContainer() {
       <header className="z-10 flex shrink-0 flex-col items-center justify-between gap-4 border-b border-slate-700 bg-dagger-dark p-4 shadow-md md:flex-row">
         <div className="flex w-full items-center gap-3 md:w-auto">
           <h1 className="whitespace-nowrap font-display text-2xl font-bold tracking-wide text-dagger-gold">
-            ПРОТИВНИКИ
+            Daggerheart Combat
           </h1>
-          <span className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400">
-            {filteredItems.length} рез.
-          </span>
         </div>
 
         <div className="flex w-full flex-wrap items-center justify-end gap-3 md:w-auto md:flex-nowrap">
@@ -45,6 +42,9 @@ export function SidebarContainer() {
           </div>
 
           <div className="flex w-full items-center gap-2 md:w-auto">
+              <span className="whitespace-nowrap text-xs text-slate-500 md:mr-1">
+                {filteredItems.length} результатов
+              </span>
               <select
                 className="flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
                 value={String(tierFilter)}

@@ -49,7 +49,6 @@ export function WorkspaceContainer() {
           onAdjustStress={(id, unitId, delta) =>
             encounterService.adjustStress(id, unitId, delta)
           }
-          onResetEntryState={(id) => encounterService.resetEntryState(id)}
           onClear={() => encounterService.clear()}
           onSetPlayerCount={(count) => encounterService.setPlayerCount(count)}
           onSetDifficultyMode={(mode) => encounterService.setDifficultyMode(mode)}
