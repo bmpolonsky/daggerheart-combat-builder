@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Adversary } from "@/lib/api";
 import { REMOTE_BASE_URL } from "@/lib/constants";
+import { formatDamageRoll } from "@/lib/utils";
 import {
   IconClose,
   IconHeart,
@@ -31,12 +32,6 @@ function renderLegacyMarkdown(text: string) {
     })
     .replace(/^- (.*)$/gm, '<li class="ml-4 list-disc marker:text-dagger-gold">$1</li>')
     .replace(/\n/g, "<br />");
-}
-
-function formatDamage(adversary: Adversary) {
-  return `${adversary.damageDieCount}d${adversary.damageDieSize}${
-    adversary.damageBonus > 0 ? `+${adversary.damageBonus}` : ""
-  }`;
 }
 
 function damageTypeLabel(value: string) {
@@ -156,7 +151,7 @@ export function AdversaryDetailsModal({
               </div>
               <div className="mt-auto pt-1 text-center">
                 <div className="font-mono text-xl font-bold leading-none tracking-tight text-white">
-                  {formatDamage(adversary)}
+                  {formatDamageRoll(adversary)}
                 </div>
                 <div className="mt-1 truncate text-[10px] font-bold uppercase text-slate-500">
                   {damageTypeLabel(adversary.damageType)}

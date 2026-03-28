@@ -3,17 +3,12 @@ import type { JSX } from "preact";
 import type { Adversary } from "@/lib/api";
 import { calculateAdversaryCost } from "@/lib/mechanics";
 import { IconHeart, IconInfo, IconPlus, IconShield, IconSword, IconZap } from "@/components/icons";
+import { formatDamageRoll } from "@/lib/utils";
 
 interface AdversaryCardProps {
   adversary: Adversary;
   onAdd: () => void;
   onViewDetails: () => void;
-}
-
-function formatDamage(adversary: Adversary) {
-  return `${adversary.damageDieCount}d${adversary.damageDieSize}${
-    adversary.damageBonus > 0 ? `+${adversary.damageBonus}` : ""
-  }`;
 }
 
 function getTierColor(tier: number) {
@@ -128,7 +123,7 @@ export function AdversaryCard({
             >
               <IconSword size={12} className="mb-0.5 text-orange-400" />
               <span className="w-full truncate text-center text-[10px] font-bold leading-none text-white">
-                {formatDamage(adversary)}
+                {formatDamageRoll(adversary)}
               </span>
             </div>
           </div>

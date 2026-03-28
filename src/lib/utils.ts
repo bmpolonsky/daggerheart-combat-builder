@@ -18,3 +18,21 @@ export function formatDateTime(value: string | null) {
     return null;
   }
 }
+
+export function formatDamageRoll(params: {
+  damageDieCount: number;
+  damageDieSize: number;
+  damageBonus: number;
+}) {
+  const { damageDieCount, damageDieSize, damageBonus } = params;
+  const hasDice = damageDieCount > 0 && damageDieSize > 0;
+
+  if (!hasDice) {
+    return `${damageBonus}`;
+  }
+
+  const bonus =
+    damageBonus > 0 ? `+${damageBonus}` : damageBonus < 0 ? `${damageBonus}` : "";
+
+  return `${damageDieCount}d${damageDieSize}${bonus}`;
+}
