@@ -19,14 +19,24 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#111318]">
-      <SidebarContainer />
-      <WorkspaceContainer />
+      <div
+        className={`flex h-full min-w-0 flex-1 transition-[padding] duration-200 ${
+          selectedAdversary ? "lg:pl-[34rem]" : ""
+        }`}
+      >
+        <SidebarContainer />
+        <WorkspaceContainer />
+      </div>
       {selectedAdversary && (
-        <AdversaryDetailsModal
-          adversary={selectedAdversary}
-          onClose={() => adversariesService.closeDetails()}
-          onAdd={() => encounterService.addAdversary(selectedAdversary)}
-        />
+        <div className="pointer-events-none fixed inset-y-0 left-0 z-40 flex w-full max-w-[34rem]">
+          <div className="pointer-events-auto h-full w-full">
+            <AdversaryDetailsModal
+              adversary={selectedAdversary}
+              onClose={() => adversariesService.closeDetails()}
+              onAdd={() => encounterService.addAdversary(selectedAdversary)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

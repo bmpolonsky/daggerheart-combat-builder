@@ -99,17 +99,19 @@ export class AdversariesService {
     const { items, searchTerm, tierFilter, roleFilter } = adversariesStore.getState();
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    const filteredItems = items.filter((item) => {
-      const matchesSearch = normalizedSearch
-        ? item.name.toLowerCase().includes(normalizedSearch) ||
-          item.roleName.toLowerCase().includes(normalizedSearch) ||
-          item.summary.toLowerCase().includes(normalizedSearch)
-        : true;
-      const matchesTier = tierFilter === "all" || item.tier === tierFilter;
-      const matchesRole = roleFilter === "all" || item.roleId === roleFilter;
+    const filteredItems = sortAdversaries(
+      items.filter((item) => {
+        const matchesSearch = normalizedSearch
+          ? item.name.toLowerCase().includes(normalizedSearch) ||
+            item.roleName.toLowerCase().includes(normalizedSearch) ||
+            item.summary.toLowerCase().includes(normalizedSearch)
+          : true;
+        const matchesTier = tierFilter === "all" || item.tier === tierFilter;
+        const matchesRole = roleFilter === "all" || item.roleId === roleFilter;
 
-      return matchesSearch && matchesTier && matchesRole;
-    });
+        return matchesSearch && matchesTier && matchesRole;
+      })
+    );
 
     const roleOptions = Array.from(
       new Map(
