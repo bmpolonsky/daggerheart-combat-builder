@@ -2,18 +2,20 @@ import { useState } from "preact/hooks";
 import type { JSX } from "preact";
 import type { Adversary } from "@/lib/api";
 import { calculateAdversaryCost } from "@/lib/mechanics";
-import { IconPlus } from "@/components/icons";
+import { IconEdit, IconPlus } from "@/components/icons";
 
 interface AdversaryCardProps {
   adversary: Adversary;
   onAdd: () => void;
   onViewDetails: () => void;
+  onEdit?: () => void;
 }
 
 export function AdversaryCard({
   adversary,
   onAdd,
   onViewDetails,
+  onEdit,
 }: AdversaryCardProps) {
   const cost = calculateAdversaryCost(adversary.roleId);
   const [imageError, setImageError] = useState(false);
@@ -56,6 +58,20 @@ export function AdversaryCard({
             <IconPlus size={14} />
           </button>
 
+          {adversary.isCustom && onEdit && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onEdit();
+              }}
+              className="absolute right-2 top-12 z-20 flex h-8 w-8 items-center justify-center rounded border border-blue-300/25 bg-black/70 text-blue-200 shadow-sm backdrop-blur-sm transition-colors hover:border-blue-300/50 hover:bg-black/80"
+              title="Редактировать"
+            >
+              <IconEdit size={14} />
+            </button>
+          )}
+
           <div
             className="absolute left-2 top-2 z-20"
             title={`Стоимость: ${cost} очков (Роль: ${adversary.roleName})`}
@@ -83,6 +99,11 @@ export function AdversaryCard({
             <span className="rounded border border-dagger-gold/20 bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-dagger-gold shadow-sm backdrop-blur-sm">
               {adversary.roleName}
             </span>
+            {adversary.isCustom && (
+              <span className="rounded border border-blue-300/20 bg-blue-950/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-blue-200 shadow-sm backdrop-blur-sm">
+                Кастом
+              </span>
+            )}
           </div>
 
           <div className="flex items-start justify-between gap-2">
