@@ -187,6 +187,19 @@ export class EncounterService {
     this.persist();
   }
 
+  syncAdversary(adversary: Adversary) {
+    encounterStore.update((state) => ({
+      ...state,
+      entries: normalizeEntries(
+        state.entries.map((entry) =>
+          entry.adversary.id === adversary.id ? { ...entry, adversary } : entry
+        )
+      ),
+    }));
+
+    this.persist();
+  }
+
   updateCount(id: number, delta: number) {
     encounterStore.update((state) => ({
       ...state,

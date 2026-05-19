@@ -1,21 +1,83 @@
-import { useMemo } from "preact/hooks";
+import { useMemo, useRef, useState } from "preact/hooks";
+import type { JSX } from "preact";
 import { AdversaryCard } from "@/components/adversaries/AdversaryCard";
-import { IconClose, IconMenu, IconSearch } from "@/components/icons";
+import type { Adversary } from "@/lib/api";
+import {
+  IconClose,
+  IconDownload,
+  IconMenu,
+  IconPlus,
+  IconSearch,
+  IconUpload,
+} from "@/components/icons";
 import { useStore } from "@/lib/store";
 import { adversariesService } from "@/services/adversariesService";
 import { encounterService } from "@/services/encounterService";
 import { adversariesStore } from "@/stores/adversaries";
 import { encounterStore } from "@/stores/encounter";
 
-export function SidebarContainer() {
+interface SidebarContainerProps {
+  onCreateCustomAdversary: () => void;
+  onEditCustomAdversary: (adversary: Adversary) => void;
+}
+
+type CatalogNotice = {
+  tone: "info" | "error";
+  message: string;
+} | null;
+
+export function SidebarContainer({
+  onCreateCustomAdversary,
+  onEditCustomAdversary,
+}: SidebarContainerProps) {
   const { searchTerm, tierFilter, roleFilter, items, isLoading, error } = useStore(adversariesStore);
   const { isSidebarOpen } = useStore(encounterStore);
+  const [catalogNotice, setCatalogNotice] = useState<CatalogNotice>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const { filteredItems, roleOptions } = adversariesService.buildBrowserView();
 
   const uniqueTiers = useMemo(
     () => Array.from(new Set(items.map((item) => item.tier))).sort((left, right) => left - right),
     [items]
   );
+
+  const customItemsCount = useMemo(() => items.filter((item) => item.isCustom).length, [items]);
+
+  const handleExportCustom = () => {
+    try {
+      const content = adversariesService.exportCustomAdversaries();
+      const blob = new Blob([content], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "custom-adversaries.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      setCatalogNotice(null);
+    } catch (err) {
+      setCatalogNotice({
+        tone: "error",
+        message: err instanceof Error ? err.message : "Не удалось экспортировать файл",
+      });
+    }
+  };
+
+  const handleImportCustom = async (event: JSX.TargetedEvent<HTMLInputElement, Event>) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedCount = adversariesService.importCustomAdversaries(await file.text());
+      setCatalogNotice({ tone: "info", message: `Импортировано: ${importedCount}` });
+    } catch (err) {
+      setCatalogNotice({
+        tone: "error",
+        message: err instanceof Error ? err.message : "Не удалось импортировать файл",
+      });
+    } finally {
+      event.currentTarget.value = "";
+    }
+  };
 
   return (
     <main className="relative flex h-full min-w-0 flex-1 flex-col">
@@ -27,52 +89,91 @@ export function SidebarContainer() {
         </div>
 
         <div className="flex w-full flex-wrap items-center justify-end gap-3 md:w-auto md:flex-nowrap">
+          <div className="flex w-full items-center gap-2 md:w-auto">
+            <button
+              type="button"
+              className="flex h-9 items-center justify-center gap-2 rounded border border-dagger-gold/30 bg-slate-800 px-3 text-xs font-bold uppercase tracking-wide text-dagger-gold transition-colors hover:border-dagger-gold/60 hover:bg-slate-700"
+              onClick={() => {
+                setCatalogNotice(null);
+                onCreateCustomAdversary();
+              }}
+              title="Создать кастомного противника"
+            >
+              <IconPlus size={14} />
+              Создать
+            </button>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded border border-slate-700 bg-slate-800 text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+              onClick={() => importInputRef.current?.click()}
+              title="Импорт кастомных противников"
+            >
+              <IconUpload size={15} />
+            </button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json"
+              onChange={handleImportCustom}
+              hidden
+            />
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded border border-slate-700 bg-slate-800 text-slate-300 transition-colors hover:border-slate-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={handleExportCustom}
+              disabled={customItemsCount === 0}
+              title="Экспорт кастомных противников"
+            >
+              <IconDownload size={15} />
+            </button>
+          </div>
+
           <div className="relative w-full flex-grow md:w-64 md:flex-grow-0">
-              <IconSearch
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                size={16}
-              />
-              <input
-                type="text"
-                placeholder="Поиск..."
-                className="w-full rounded-md border border-slate-700 bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-600 focus:border-dagger-gold focus:ring-1 focus:ring-dagger-gold"
-                value={searchTerm}
-                onInput={(event) => adversariesService.setSearchTerm(event.currentTarget.value)}
-              />
+            <IconSearch
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              size={16}
+            />
+            <input
+              type="text"
+              placeholder="Поиск..."
+              className="w-full rounded-md border border-slate-700 bg-slate-900 py-2 pl-9 pr-4 text-sm text-slate-200 outline-none transition-all placeholder:text-slate-600 focus:border-dagger-gold focus:ring-1 focus:ring-dagger-gold"
+              value={searchTerm}
+              onInput={(event) => adversariesService.setSearchTerm(event.currentTarget.value)}
+            />
           </div>
 
           <div className="flex w-full items-center gap-2 md:w-auto">
-              <span className="whitespace-nowrap text-xs text-slate-500 md:mr-1">
-                {filteredItems.length} результатов
-              </span>
-              <select
-                className="flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
-                value={String(tierFilter)}
-                onChange={(event) => {
-                  const value = event.currentTarget.value;
-                  adversariesService.setTierFilter(value === "all" ? "all" : Number(value));
-                }}
-              >
-                <option value="all">Любой ранг</option>
-                {uniqueTiers.map((tier) => (
-                  <option key={tier} value={tier}>
-                    Ранг {tier}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                className="max-w-[140px] flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
-                value={roleFilter}
-                onChange={(event) => adversariesService.setRoleFilter(event.currentTarget.value)}
-              >
-                <option value="all">Любая роль</option>
-                {roleOptions.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.name}
-                  </option>
+            <span className="whitespace-nowrap text-xs text-slate-500 md:mr-1">
+              {filteredItems.length} результатов
+            </span>
+            <select
+              className="flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
+              value={String(tierFilter)}
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                adversariesService.setTierFilter(value === "all" ? "all" : Number(value));
+              }}
+            >
+              <option value="all">Любой ранг</option>
+              {uniqueTiers.map((tier) => (
+                <option key={tier} value={tier}>
+                  Ранг {tier}
+                </option>
               ))}
-              </select>
+            </select>
+
+            <select
+              className="max-w-[140px] flex-1 cursor-pointer rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 outline-none focus:border-dagger-gold md:flex-none"
+              value={roleFilter}
+              onChange={(event) => adversariesService.setRoleFilter(event.currentTarget.value)}
+            >
+              <option value="all">Любая роль</option>
+              {roleOptions.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button
@@ -86,27 +187,44 @@ export function SidebarContainer() {
       </header>
 
       <div className="flex-1 overflow-y-auto bg-slate-900/50 p-4 md:p-6">
+        {catalogNotice && (
+          <div
+            className={`mb-4 rounded border px-3 py-2 text-sm ${
+              catalogNotice.tone === "error"
+                ? "border-red-500/30 bg-red-950/30 text-red-200"
+                : "border-dagger-gold/20 bg-slate-800 text-slate-300"
+            }`}
+          >
+            {catalogNotice.message}
+          </div>
+        )}
+        {error && !isLoading && items.length > 0 && (
+          <div className="mb-4 rounded border border-orange-500/30 bg-orange-950/30 px-3 py-2 text-sm text-orange-200">
+            API недоступен: {error}
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-4 pb-20 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {isLoading && items.length === 0 && (
             <div className="col-span-full py-20 text-center">
               <p className="text-lg text-slate-500">Загружаем противников...</p>
             </div>
           )}
-          {error && !isLoading && (
+          {error && !isLoading && items.length === 0 && (
             <div className="col-span-full py-20 text-center">
               <p className="text-lg text-red-400">Не удалось загрузить список: {error}</p>
             </div>
           )}
-          {!error &&
+          {(!error || items.length > 0) &&
             filteredItems.map((adversary) => (
-            <AdversaryCard
-              key={adversary.id}
-              adversary={adversary}
-              onAdd={() => encounterService.addAdversary(adversary)}
-              onViewDetails={() => adversariesService.openDetails(adversary.id)}
-            />
-          ))}
-          {!isLoading && !error && filteredItems.length === 0 && (
+              <AdversaryCard
+                key={adversary.id}
+                adversary={adversary}
+                onAdd={() => encounterService.addAdversary(adversary)}
+                onViewDetails={() => adversariesService.openDetails(adversary.id)}
+                onEdit={adversary.isCustom ? () => onEditCustomAdversary(adversary) : undefined}
+              />
+            ))}
+          {!isLoading && (!error || items.length > 0) && filteredItems.length === 0 && (
             <div className="col-span-full py-20 text-center">
               <p className="text-lg text-slate-500">
                 Противники, соответствующие критериям, не найдены.

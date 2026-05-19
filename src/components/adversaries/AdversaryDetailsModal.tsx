@@ -4,6 +4,8 @@ import { REMOTE_BASE_URL } from "@/lib/constants";
 import { formatDamageRoll } from "@/lib/utils";
 import {
   IconClose,
+  IconCopy,
+  IconEdit,
   IconHeart,
   IconInfo,
   IconShield,
@@ -15,6 +17,8 @@ interface AdversaryDetailsModalProps {
   adversary: Adversary;
   onClose: () => void;
   onAdd: () => void;
+  onEdit?: () => void;
+  onDuplicate: () => void;
 }
 
 function renderLegacyMarkdown(text: string) {
@@ -59,6 +63,8 @@ export function AdversaryDetailsModal({
   adversary,
   onClose,
   onAdd,
+  onEdit,
+  onDuplicate,
 }: AdversaryDetailsModalProps) {
   const [imageError, setImageError] = useState(false);
   const imageUrl = adversary.image && !imageError ? adversary.image : null;
@@ -112,13 +118,37 @@ export function AdversaryDetailsModal({
                   </span>
                 </div>
               </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="shrink-0 rounded-full bg-black/20 p-2 text-slate-400 transition-colors hover:bg-black/40 hover:text-white backdrop-blur-sm"
-            >
-              <IconClose size={24} />
-            </button>
+            <div className="flex shrink-0 items-center gap-1.5">
+              {adversary.isCustom && onEdit && (
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="rounded bg-black/20 p-2 text-blue-200 transition-colors hover:bg-black/40 hover:text-blue-100 backdrop-blur-sm"
+                  title="Редактировать"
+                  aria-label="Редактировать"
+                >
+                  <IconEdit size={19} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onDuplicate}
+                className="rounded bg-black/20 p-2 text-dagger-gold transition-colors hover:bg-black/40 hover:text-yellow-300 backdrop-blur-sm"
+                title="Создать копию"
+                aria-label="Создать копию"
+              >
+                <IconCopy size={19} />
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full bg-black/20 p-2 text-slate-400 transition-colors hover:bg-black/40 hover:text-white backdrop-blur-sm"
+                title="Закрыть"
+                aria-label="Закрыть"
+              >
+                <IconClose size={24} />
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-[minmax(0,1fr)_11rem] gap-4 md:grid-cols-[minmax(0,1fr)_13rem]">

@@ -9,6 +9,8 @@ export interface AdversaryFeature {
 export interface Adversary {
   id: number;
   slug: string;
+  isCustom?: boolean;
+  updatedAt?: number;
   tier: number;
   roleId: string;
   roleName: string;

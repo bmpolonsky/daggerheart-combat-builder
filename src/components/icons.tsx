@@ -41,6 +41,56 @@ export function IconPlus(props: IconProps) {
   );
 }
 
+export function IconEdit(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+    </IconBase>
+  );
+}
+
+export function IconCopy(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect x="8" y="8" width="11" height="11" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+    </IconBase>
+  );
+}
+
+export function IconTrash(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 7h16" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M6 7l1 14h10l1-14" />
+      <path d="M9 7V4h6v3" />
+    </IconBase>
+  );
+}
+
+export function IconUpload(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 16V4" />
+      <path d="m7 9 5-5 5 5" />
+      <path d="M4 20h16" />
+    </IconBase>
+  );
+}
+
+export function IconDownload(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 4v12" />
+      <path d="m7 11 5 5 5-5" />
+      <path d="M4 20h16" />
+    </IconBase>
+  );
+}
+
 export function IconMinus(props: IconProps) {
   return (
     <IconBase {...props}>
