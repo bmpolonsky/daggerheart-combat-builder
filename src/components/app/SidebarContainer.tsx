@@ -13,23 +13,16 @@ import {
 import { useStore } from "@/lib/store";
 import { adversariesService } from "@/services/adversariesService";
 import { encounterService } from "@/services/encounterService";
+import { customAdversaryEditorService } from "@/services/customAdversaryEditorService";
 import { adversariesStore } from "@/stores/adversaries";
 import { encounterStore } from "@/stores/encounter";
-
-interface SidebarContainerProps {
-  onCreateCustomAdversary: () => void;
-  onEditCustomAdversary: (adversary: Adversary) => void;
-}
 
 type CatalogNotice = {
   tone: "info" | "error";
   message: string;
 } | null;
 
-export function SidebarContainer({
-  onCreateCustomAdversary,
-  onEditCustomAdversary,
-}: SidebarContainerProps) {
+export function SidebarContainer() {
   const { searchTerm, tierFilter, roleFilter, items, isLoading, error } = useStore(adversariesStore);
   const { isSidebarOpen } = useStore(encounterStore);
   const [catalogNotice, setCatalogNotice] = useState<CatalogNotice>(null);
@@ -95,7 +88,7 @@ export function SidebarContainer({
               className="flex h-9 items-center justify-center gap-2 rounded border border-dagger-gold/30 bg-slate-800 px-3 text-xs font-bold uppercase tracking-wide text-dagger-gold transition-colors hover:border-dagger-gold/60 hover:bg-slate-700"
               onClick={() => {
                 setCatalogNotice(null);
-                onCreateCustomAdversary();
+                customAdversaryEditorService.openCreate();
               }}
               title="Создать кастомного противника"
             >
@@ -221,7 +214,11 @@ export function SidebarContainer({
                 adversary={adversary}
                 onAdd={() => encounterService.addAdversary(adversary)}
                 onViewDetails={() => adversariesService.openDetails(adversary.id)}
-                onEdit={adversary.isCustom ? () => onEditCustomAdversary(adversary) : undefined}
+                onEdit={
+                  adversary.isCustom
+                    ? () => customAdversaryEditorService.openEdit(adversary)
+                    : undefined
+                }
               />
             ))}
           {!isLoading && (!error || items.length > 0) && filteredItems.length === 0 && (

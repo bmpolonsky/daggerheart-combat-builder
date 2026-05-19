@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { Adversary } from "@/lib/api";
 import { REMOTE_BASE_URL } from "@/lib/constants";
 import { formatDamageRoll } from "@/lib/utils";
@@ -67,13 +67,18 @@ export function AdversaryDetailsModal({
   onDuplicate,
 }: AdversaryDetailsModalProps) {
   const [imageError, setImageError] = useState(false);
+  const onCloseRef = useRef(onClose);
   const imageUrl = adversary.image && !imageError ? adversary.image : null;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -83,7 +88,7 @@ export function AdversaryDetailsModal({
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previous;
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <aside

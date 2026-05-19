@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import type { ComponentChildren, JSX } from "preact";
 import type { Adversary, AdversaryFeature } from "@/lib/api";
 import { ADVERSARY_ROLE_OPTIONS } from "@/lib/customAdversaries";
@@ -177,14 +177,19 @@ export function CustomAdversaryModal({
 }: CustomAdversaryModalProps) {
   const [state, setState] = useState(() => toFormState(adversary));
   const [error, setError] = useState<string | null>(null);
+  const onCloseRef = useRef(onClose);
   const isEditing = mode ? mode === "edit" : Boolean(adversary);
   const isTemplateCreate = !isEditing && Boolean(adversary);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -194,7 +199,7 @@ export function CustomAdversaryModal({
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
+  }, []);
 
   const updateField =
     <K extends keyof FormState>(key: K) =>
